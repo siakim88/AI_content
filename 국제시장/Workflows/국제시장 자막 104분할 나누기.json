@@ -1,0 +1,187 @@
+{
+  "name": "국제시장 자막 104분할 나누기",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8ec4d6e7-bf5e-4f51-b87e-5e261395bcfc",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 입력이 단일 아이템인지 여러 아이템인지 확인합니다.\n// $input.all()은 n8n의 내장 함수로, 모든 입력 데이터를 항상 배열 형태로 안전하게 가져옵니다.\nconst allItems = $input.all();\n\n// 여기에 구글 시트의 '자막'이 들어있는 실제 '열 이름'을 정확하게 적어주세요.\nconst columnName = 'content'; \n\n// 모든 아이템에서 자막 데이터만 순서대로 뽑아내 하나의 배열로 만듭니다.\nconst lines = allItems.map(item => item.json[columnName]);\n\nconst totalCells = 104; // 최종 목표 셀 개수\nconst totalLines = lines.length;\n\n// 각 셀에 몇 줄씩 들어갈지 계산합니다.\nconst linesPerCell = Math.ceil(totalLines / totalCells);\n\nconst resultItems = []; // 결과를 담을 새로운 배열\n\n// 104개의 셀을 만드는 루프\nfor (let i = 0; i < totalCells; i++) {\n  const startIndex = i * linesPerCell;\n  const endIndex = startIndex + linesPerCell;\n  \n  // 계산된 범위만큼 자막 라인을 잘라내어 하나의 텍스트 덩어리로 합칩니다.\n  const cellContent = lines.slice(startIndex, endIndex).join('\\n');\n  \n  // 다음 노드로 보낼 데이터 형식\n  resultItems.push({\n    'content': cellContent\n  });\n}\n\n// 최종적으로 104개의 묶음 데이터를 다음 노드로 전달합니다.\nreturn resultItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "764c2691-75a0-4f07-b760-8a7bbcb722ff",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA",
+          "mode": "list",
+          "cachedResultName": "영화 국제시장 한국어자막",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "전체자막",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b790aacb-1456-48c1-b09a-b8176103cfc3",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xTVKViIjI4JFfn5A",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA",
+          "mode": "list",
+          "cachedResultName": "영화 국제시장 한국어자막",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1201908854,
+          "mode": "list",
+          "cachedResultName": "13분할",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JDr1SWoxnTMsRLaEOvcFl__4pj8YWC5evmMwWqFLZIA/edit#gid=1201908854"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "content": "={{ $json.content }}"
+          },
+          "matchingColumns": [
+            "content"
+          ],
+          "schema": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        0
+      ],
+      "id": "f8ea7c40-70b8-4353-8dd5-dc3fc079264d",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xTVKViIjI4JFfn5A",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2632f24b-244e-403f-b661-ba8de53beb71",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "66e9528ae17b86aa30fb8f56bb99b806483efddd684d86c188f94fa3463dec9c"
+  },
+  "id": "waFOgYJwtpWQ1lLS",
+  "tags": []
+}
