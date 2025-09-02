@@ -1,0 +1,965 @@
+{
+    "name": "인생 교재 제작 V1(13장으로 만들기 , 성공)",
+    "flow": [
+        {
+            "id": 50,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 3372869
+            },
+            "mapper": {
+                "base": "app2UbXaWZnOa6660",
+                "view": "viwddPj84fSQ1hCqM",
+                "table": "tblE7zHcZ0usd4oIS",
+                "fields": [
+                    "page_number",
+                    "scene_intro"
+                ],
+                "maxRecords": "13",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": -1009,
+                    "y": -907,
+                    "name": "13장 단원설명 불러오기"
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": " 영화<인생>통합콘텐츠"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "영화<인생>통합콘텐츠"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Table 1"
+                        },
+                        "fields": {
+                            "mode": "chose",
+                            "label": [
+                                "page_number",
+                                "scene_intro"
+                            ]
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "My Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "label": "Total number of bundles",
+                        "type": "uinteger"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "label": "Bundle order position",
+                        "type": "uinteger"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "page_number",
+                        "type": "text",
+                        "label": "page_number"
+                    },
+                    {
+                        "name": "scene_intro",
+                        "type": "text",
+                        "label": "scene_intro"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 51,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{`50`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": -997,
+                    "y": -1215
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 52,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 3372869
+            },
+            "mapper": {
+                "base": "app7PHXdWkoIUoNgq",
+                "sort": [
+                    {
+                        "field": "NUMBER",
+                        "direction": "asc"
+                    }
+                ],
+                "view": "viwvHRFpEdTX4NmTT",
+                "table": "tblMq1YTHJgDmGm2T",
+                "fields": [
+                    "NUMBER",
+                    "단원번호",
+                    "chapter_number",
+                    "text_content",
+                    "image_file",
+                    "image_embed_url",
+                    "google_drive_URL",
+                    "가로폭",
+                    "세로폭"
+                ],
+                "formula": "{단원번호} = {{50.page_number}}",
+                "maxRecords": "8",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": -697,
+                    "y": -1215,
+                    "name": "파일불러오기(8개)"
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "영화콘텐츠 콘텐츠 제작"
+                        },
+                        "sort": {
+                            "mode": "chose",
+                            "items": [
+                                {
+                                    "field": {
+                                        "mode": "chose",
+                                        "label": "NUMBER"
+                                    },
+                                    "direction": {
+                                        "mode": "chose",
+                                        "label": "Ascending"
+                                    }
+                                }
+                            ]
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "영화 <인생>"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Table 1"
+                        },
+                        "fields": {
+                            "mode": "chose",
+                            "label": [
+                                "NUMBER",
+                                "단원번호",
+                                "chapter_number",
+                                "text_content",
+                                "image_file",
+                                "image_embed_url",
+                                "google_drive_URL",
+                                "가로폭",
+                                "세로폭"
+                            ]
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable2"
+                            },
+                            "label": "My Airtable Token or Key connection"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "NUMBER",
+                        "type": "text",
+                        "label": "NUMBER"
+                    },
+                    {
+                        "name": "단원번호",
+                        "type": "text",
+                        "label": "단원번호"
+                    },
+                    {
+                        "name": "chapter_number",
+                        "type": "text",
+                        "label": "chapter_number"
+                    },
+                    {
+                        "name": "text_content",
+                        "type": "text",
+                        "label": "text_content"
+                    },
+                    {
+                        "name": "image_file",
+                        "spec": [
+                            {
+                                "name": "id",
+                                "type": "text",
+                                "label": "ID"
+                            },
+                            {
+                                "name": "width",
+                                "type": "uinteger",
+                                "label": "Width"
+                            },
+                            {
+                                "name": "height",
+                                "type": "uinteger",
+                                "label": "Height"
+                            },
+                            {
+                                "name": "url",
+                                "type": "url",
+                                "label": "URL"
+                            },
+                            {
+                                "name": "filename",
+                                "type": "filename",
+                                "label": "File name"
+                            },
+                            {
+                                "name": "size",
+                                "type": "uinteger",
+                                "label": "Size"
+                            },
+                            {
+                                "name": "type",
+                                "type": "text",
+                                "label": "MIME type"
+                            },
+                            {
+                                "name": "thumbnails",
+                                "spec": [
+                                    {
+                                        "name": "small",
+                                        "spec": [
+                                            {
+                                                "name": "url",
+                                                "type": "url",
+                                                "label": "URL"
+                                            },
+                                            {
+                                                "name": "width",
+                                                "type": "uinteger",
+                                                "label": "Width"
+                                            },
+                                            {
+                                                "name": "height",
+                                                "type": "uinteger",
+                                                "label": "Height"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Small"
+                                    },
+                                    {
+                                        "name": "large",
+                                        "spec": [
+                                            {
+                                                "name": "url",
+                                                "type": "url",
+                                                "label": "URL"
+                                            },
+                                            {
+                                                "name": "width",
+                                                "type": "uinteger",
+                                                "label": "Width"
+                                            },
+                                            {
+                                                "name": "height",
+                                                "type": "uinteger",
+                                                "label": "Height"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Large"
+                                    },
+                                    {
+                                        "name": "full",
+                                        "spec": [
+                                            {
+                                                "name": "url",
+                                                "type": "url",
+                                                "label": "URL"
+                                            },
+                                            {
+                                                "name": "width",
+                                                "type": "uinteger",
+                                                "label": "Width"
+                                            },
+                                            {
+                                                "name": "height",
+                                                "type": "uinteger",
+                                                "label": "Height"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Full"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Thumbnails"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "image_file"
+                    },
+                    {
+                        "name": "image_embed_url",
+                        "type": "text",
+                        "label": "image_embed_url"
+                    },
+                    {
+                        "name": "google_drive_URL",
+                        "type": "text",
+                        "label": "google_drive_URL"
+                    },
+                    {
+                        "name": "가로폭",
+                        "type": "number",
+                        "label": "가로폭"
+                    },
+                    {
+                        "name": "세로폭",
+                        "type": "number",
+                        "label": "세로폭"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 53,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{`52`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": -397,
+                    "y": -1215
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 54,
+            "module": "util:TextAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 53,
+                "rowSeparator": ""
+            },
+            "mapper": {
+                "value": "<img src=\"{{52.image_file[].url}}\" width=\"600\" height=\"400\">\r\n<p>{{52.text_content}}</p>"
+            },
+            "metadata": {
+                "designer": {
+                    "x": -97,
+                    "y": -1215,
+                    "name": "이미지와 텍스트 배열"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Iterator [53]"
+                        }
+                    },
+                    "parameters": {
+                        "rowSeparator": {
+                            "label": "Empty"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "rowSeparator",
+                        "type": "select",
+                        "label": "Row separator",
+                        "validate": {
+                            "enum": [
+                                "\n",
+                                "\t",
+                                "other"
+                            ]
+                        }
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Text"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 55,
+            "module": "util:TextAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 51,
+                "rowSeparator": ""
+            },
+            "mapper": {
+                "value": "<h1 style=\"text-align:center;\">제{{50.page_number}}장</h1>\n\n<h2>{{52.chapter_number}}</h2>\r\n\r\n<p>{{replace(50.scene_intro; newline; \"<br>\")}}</p>\n\r\n\r\n<br>\n<img src=\"{{52.image_file[].url}}\" width=\"600\" height=\"400\">\r\n\r\n<br>\n<p>{{replace(52.text_content; newline; \"<br>\")}}</p>"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 203,
+                    "y": -1215,
+                    "name": "단원설명1+콘텐츠8개 합치기"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Iterator [51]"
+                        }
+                    },
+                    "parameters": {
+                        "rowSeparator": {
+                            "label": "Empty"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "rowSeparator",
+                        "type": "select",
+                        "label": "Row separator",
+                        "validate": {
+                            "enum": [
+                                "\n",
+                                "\t",
+                                "other"
+                            ]
+                        }
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Text"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 57,
+            "module": "google-docs:createADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 2951947
+            },
+            "mapper": {
+                "name": "교재{{50.page_number}}",
+                "footer": false,
+                "header": false,
+                "content": "{{55.text}}",
+                "folderId": "/1LgyNB--cUOUym9eRX7P8oLEKCJetwo_R",
+                "destination": "drive"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 201,
+                    "y": -899,
+                    "name": "구글독스로 업로드"
+                },
+                "restore": {
+                    "expect": {
+                        "folderId": {
+                            "mode": "chose",
+                            "path": [
+                                "영화 자막(국제시장, 인생)"
+                            ]
+                        },
+                        "destination": {
+                            "label": "My Drive"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (siakim88@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Name",
+                        "required": true
+                    },
+                    {
+                        "name": "content",
+                        "type": "text",
+                        "label": "Content",
+                        "required": true
+                    },
+                    {
+                        "name": "destination",
+                        "type": "select",
+                        "label": "Choose a Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "header",
+                        "type": "boolean",
+                        "label": "Insert a Header",
+                        "required": true
+                    },
+                    {
+                        "name": "footer",
+                        "type": "boolean",
+                        "label": "Insert a Footer",
+                        "required": true
+                    },
+                    {
+                        "name": "folderId",
+                        "type": "folder",
+                        "label": "New Document's Location",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 59,
+            "module": "google-drive:uploadAFile",
+            "version": 4,
+            "parameters": {
+                "__IMTCONN__": 3249088
+            },
+            "mapper": {
+                "data": "{{57.id}}",
+                "title": "{{57.name}}",
+                "select": "value",
+                "convert": true,
+                "filename": "{{57.name}}",
+                "folderId": "/1LgyNB--cUOUym9eRX7P8oLEKCJetwo_R",
+                "sourceType": "application/pdf",
+                "targetType": "auto",
+                "destination": "drive"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 510,
+                    "y": -895,
+                    "name": "파일 다운로드"
+                },
+                "restore": {
+                    "expect": {
+                        "select": {
+                            "label": "Select from the list"
+                        },
+                        "folderId": {
+                            "mode": "chose",
+                            "path": [
+                                "영화 자막(국제시장, 인생)"
+                            ]
+                        },
+                        "sourceType": {
+                            "mode": "chose",
+                            "label": "application/pdf"
+                        },
+                        "targetType": {
+                            "label": "Auto Detection",
+                            "nested": [
+                                {
+                                    "mode": "edit",
+                                    "name": "sourceType",
+                                    "type": "select",
+                                    "label": "Source File MIME Type",
+                                    "options": "rpc://google-drive/4/listAllSourceFileMimeTypes",
+                                    "mappable": {
+                                        "help": "With`Auto Detection`, it is recommended to map`MIME type`from module **[MIME](https://www.integromat.com/en/integrations/mime) > Get a MIME type**."
+                                    },
+                                    "required": true
+                                }
+                            ]
+                        },
+                        "destination": {
+                            "label": "My Drive"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google-restricted"
+                            },
+                            "label": "My Google Restricted connection (siakim88@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google-restricted",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Enter a Folder ID",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "map",
+                                "value"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "title",
+                        "type": "text",
+                        "label": "New File Name"
+                    },
+                    {
+                        "name": "filename",
+                        "type": "text",
+                        "label": "File Name",
+                        "required": true
+                    },
+                    {
+                        "name": "data",
+                        "type": "buffer",
+                        "label": "Data",
+                        "required": true
+                    },
+                    {
+                        "name": "convert",
+                        "type": "boolean",
+                        "label": "Convert a File",
+                        "required": true
+                    },
+                    {
+                        "name": "destination",
+                        "type": "select",
+                        "label": "New Drive Location",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "folderId",
+                        "type": "folder",
+                        "label": "New Folder Location",
+                        "required": true
+                    },
+                    {
+                        "name": "targetType",
+                        "type": "select",
+                        "label": "Target Google File Type",
+                        "required": true
+                    },
+                    {
+                        "mode": "edit",
+                        "name": "sourceType",
+                        "type": "select",
+                        "label": "Source File MIME Type",
+                        "required": true
+                    }
+                ],
+                "advanced": true
+            }
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}
