@@ -1,0 +1,761 @@
+{
+  "name": "영화 국제시장 오디오북 통합하기 1/13",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appDBwR53ttAXRTKE",
+          "mode": "list",
+          "cachedResultName": "영화 국제시장 데이터(104분할)",
+          "cachedResultUrl": "https://airtable.com/appDBwR53ttAXRTKE"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblEWfgMEgrGAEIMB",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appDBwR53ttAXRTKE/tblEWfgMEgrGAEIMB"
+        },
+        "filterByFormula": "{Single Select}=\"done\"",
+        "returnAll": false,
+        "limit": 8,
+        "options": {
+          "downloadFields": [
+            "Audio_HTML"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "NUMBER"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "7a447dfb-7ed6-4def-bcae-ea7c688062d4",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CGLiHVK6lB0CMKDy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "ac8dd47c-73e2-4ed9-885d-43698736c4de",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.Audio_HTML[0].url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "17b9d53f-af87-4ef2-9ac0-63d2ff63c5ea",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// =================================================================\n// 🔧 올바른 n8n Code 노드 (HTML을 JavaScript로 생성)\n// =================================================================\n\n// -----------------------------------------------------------------\n// ⚙️ 1단계: 데이터 가져오기\n// -----------------------------------------------------------------\n\n// YouTube 정보 가져오기\nlet videoInfo = {};\ntry {\n  const youtubeNode = $('Search records1').first();\n  if (youtubeNode && youtubeNode.json) {\n    videoInfo = {\n      Name: youtubeNode.json.Name || \"제$('Search records1').first().json.page_number장\",\n      Youtube_URL: youtubeNode.json.Youtube_URL || \"\",\n      page_number: youtubeNode.json.page_number || \"audiobook\"\n    };\n  }\n} catch (error) {\n  videoInfo = {\n    Name: \"통합 오디오북\",\n    Youtube_URL: \"\",\n    page_number: \"audiobook\"\n  };\n}\n\n// YouTube URL 처리\nlet youtubeEmbedUrl = '';\nif (videoInfo.Youtube_URL) {\n  let videoId = videoInfo.Youtube_URL;\n  \n  if (videoId.includes('youtube.com/watch?v=')) {\n    videoId = videoId.split('v=')[1].split('&')[0];\n  } else if (videoId.includes('youtu.be/')) {\n    videoId = videoId.split('youtu.be/')[1].split('?')[0];\n  } else if (videoId.includes('youtube.com/embed/')) {\n    videoId = videoId.split('embed/')[1].split('?')[0];\n  }\n  \n  youtubeEmbedUrl = `https://www.youtube.com/embed/${videoId}`;\n}\n\n// 모든 입력 데이터 가져오기\nconst allInputs = $input.all();\n\n// 챕터 내용 추출 함수\nfunction getChapterContent(inputItem) {\n  if (!inputItem) return '<p>내용을 불러올 수 없습니다.</p>';\n  \n  let content = '';\n  \n  // 다양한 방식으로 내용 추출 시도\n  if (inputItem.json) {\n    if (typeof inputItem.json.data === 'string') {\n      content = inputItem.json.data;\n    } else if (typeof inputItem.json === 'string') {\n      content = inputItem.json;\n    } else if (inputItem.json.content) {\n      content = inputItem.json.content;\n    } else if (inputItem.json.body) {\n      content = inputItem.json.body;\n    }\n  }\n  \n  // binary 데이터 처리\n  if (!content && inputItem.binary && inputItem.binary.data) {\n    try {\n      if (typeof inputItem.binary.data === 'string') {\n        content = inputItem.binary.data;\n      } else if (inputItem.binary.data.toString) {\n        content = inputItem.binary.data.toString();\n      }\n    } catch (e) {\n      console.log('Binary 변환 실패:', e);\n    }\n  }\n  \n  if (!content) {\n    return '<p>내용을 불러올 수 없습니다.</p>';\n  }\n  \n  // HTML body 내용만 추출\n  const bodyMatch = content.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i);\n  if (bodyMatch && bodyMatch[1]) {\n    return bodyMatch[1].trim();\n  }\n  \n  // body 태그가 없으면 불필요한 태그들 제거\n  return content\n    .replace(/<html[^>]*>/gi, '')\n    .replace(/<\\/html>/gi, '')\n    .replace(/<head[^>]*>[\\s\\S]*?<\\/head>/gi, '')\n    .replace(/<\\/?body[^>]*>/gi, '')\n    .replace(/<\\/?doctype[^>]*>/gi, '')\n    .trim();\n}\n\n// -----------------------------------------------------------------\n// ⚙️ 2단계: 챕터별 내용 생성\n// -----------------------------------------------------------------\n\nconst chapters = [];\nfor (let i = 0; i < 8; i++) {\n  chapters.push({\n    number: i + 1,\n    title: `챕터 ${i + 1}`,\n    content: getChapterContent(allInputs[i])\n  });\n}\n\n// -----------------------------------------------------------------\n// ⚙️ 3단계: HTML 생성\n// -----------------------------------------------------------------\n\nconst finalHTML = `<!DOCTYPE html>\n<html lang=\"ko\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>${videoInfo.Name}</title>\n    <style>\n        :root { \n            --sidebar-width: 300px; \n        }\n        \n        body { \n            font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; \n            margin: 0; \n            background-color: #f4f7f9; \n        }\n        \n        /* 제목 섹션 */\n        .title-section {\n            background: #ffffff;\n            padding: 30px 40px;\n            text-align: center;\n            border-bottom: 1px solid #e0e0e0;\n        }\n        \n        .main-title {\n            font-size: 2.5em;\n            font-weight: bold;\n            color: #2c3e50;\n            margin: 0;\n        }\n        \n        /* 영상 섹션 */\n        .video-section {\n            background: #ffffff;\n            padding: 40px;\n            display: flex;\n            justify-content: center;\n            border-bottom: 1px solid #e0e0e0;\n        }\n        \n        .video-container {\n            width: 100%;\n            max-width: 800px;\n        }\n        \n        .youtube-iframe { \n            width: 100%; \n            aspect-ratio: 16 / 9; \n            border: none; \n            border-radius: 12px; \n            box-shadow: 0 4px 15px rgba(0,0,0,0.1); \n            background-color: #e9ecef; \n        }\n        \n        /* 콘텐츠 영역 */\n        .content-section {\n            display: flex;\n            min-height: calc(100vh - 400px);\n        }\n        \n        /* 왼쪽 네비게이션 */\n        .sidebar { \n            width: var(--sidebar-width); \n            background: #ffffff; \n            padding: 30px 20px;\n            box-shadow: 2px 0 8px rgba(0,0,0,0.05); \n            box-sizing: border-box;\n            overflow-y: auto;\n        }\n        \n        .sidebar h3 { \n            margin-top: 0; \n            margin-bottom: 25px; \n            font-size: 1.3em; \n            color: #34495e;\n            text-align: center;\n        }\n        \n        .nav-btn { \n            display: block; \n            width: 100%; \n            padding: 16px 20px; \n            margin-bottom: 10px; \n            background: transparent; \n            border: 1px solid #dcdcdc; \n            cursor: pointer; \n            border-radius: 8px; \n            text-align: left; \n            transition: all 0.2s ease; \n            font-size: 16px; \n            color: #34495e; \n        }\n        \n        .nav-btn:hover { \n            background: #f0f4f7; \n            border-color: #007bff; \n        }\n        \n        .nav-btn.active { \n            background: #007bff; \n            color: white; \n            border-color: #007bff; \n            font-weight: 600; \n        }\n        \n        /* 오른쪽 콘텐츠 영역 */\n        .main-content { \n            flex: 1; \n            padding: 40px;\n            background: #ffffff;\n            overflow-y: auto;\n        }\n        \n        .content-page { \n            display: none; \n            animation: fadeIn 0.4s ease; \n        }\n        \n        .content-page.active { \n            display: block; \n        }\n        \n        .chapter-title { \n            font-size: 2.0em; \n            margin-bottom: 25px; \n            color: #2c3e50; \n            border-bottom: 3px solid #007bff; \n            padding-bottom: 15px; \n        }\n        \n        .chapter-content { \n            line-height: 1.8; \n            font-size: 0.9em; \n            color: #333; \n        }\n        \n        /* 컨텐츠 내 요소들 스타일링 */\n        .chapter-content img {\n            max-width: 100%;\n            height: auto;\n            border-radius: 8px;\n            margin: 15px 0;\n        }\n        \n        .chapter-content table {\n            width: 100%;\n            border-collapse: collapse;\n            margin: 20px 0;\n        }\n        \n        .chapter-content th,\n        .chapter-content td {\n            padding: 12px;\n            border: 1px solid #ddd;\n            text-align: left;\n        }\n        \n        .chapter-content th {\n            background-color: #f8f9fa;\n            font-weight: bold;\n        }\n        \n        .chapter-content p {\n            margin-bottom: 16px;\n        }\n        \n        .chapter-content h1, .chapter-content h2, .chapter-content h3 {\n            color: #2c3e50;\n            margin-top: 30px;\n            margin-bottom: 15px;\n        }\n        \n        @keyframes fadeIn { \n            from { \n                opacity: 0; \n                transform: translateY(10px); \n            } \n            to { \n                opacity: 1; \n                transform: translateY(0); \n            } \n        }\n\n        @media (max-width: 768px) {\n            .content-section {\n                flex-direction: column;\n            }\n            .sidebar {\n                width: 100%;\n                max-height: 200px;\n                padding: 20px;\n            }\n            .main-content {\n                padding: 20px;\n            }\n            .title-section, .video-section {\n                padding: 20px;\n            }\n            .main-title {\n                font-size: 2em;\n            }\n        }\n    </style>\n</head>\n<body>\n    <!-- 제목 섹션 -->\n    <div class=\"title-section\">\n        <h1 class=\"main-title\">${videoInfo.Name}</h1>\n    </div>\n\n    <!-- 영상 섹션 -->\n    <div class=\"video-section\">\n        <div class=\"video-container\">\n            ${youtubeEmbedUrl ? `\n            <iframe class=\"youtube-iframe\" \n                    src=\"${youtubeEmbedUrl}\" \n                    title=\"YouTube video player\" \n                    frameborder=\"0\" \n                    allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" \n                    allowfullscreen>\n            </iframe>\n            ` : '<div class=\"youtube-iframe\" style=\"display: flex; align-items: center; justify-content: center; color: #666;\">YouTube 영상이 없습니다.</div>'}\n        </div>\n    </div>\n\n    <!-- 콘텐츠 섹션 (네비게이션 + 내용) -->\n    <div class=\"content-section\">\n        <!-- 왼쪽 네비게이션 -->\n        <div class=\"sidebar\">\n            <h3>📚 목차</h3>\n            ${chapters.map((chapter, index) => \n              `<button class=\"nav-btn ${index === 0 ? 'active' : ''}\" onclick=\"showPage(${chapter.number})\">${chapter.number}. ${chapter.title}</button>`\n            ).join('\\n            ')}\n        </div>\n\n        <!-- 오른쪽 콘텐츠 영역 -->\n        <div class=\"main-content\">\n            ${chapters.map((chapter, index) => `\n            <!-- 챕터 ${chapter.number} -->\n            <div id=\"page-${chapter.number}\" class=\"content-page ${index === 0 ? 'active' : ''}\">\n                <h2 class=\"chapter-title\">${chapter.title}</h2>\n                <div class=\"chapter-content\">\n                    ${chapter.content}\n                </div>\n            </div>`).join('\\n            ')}\n        </div>\n    </div>\n\n    <script>\n        function showPage(pageNumber) {\n            // 모든 네비게이션 버튼에서 active 클래스 제거\n            document.querySelectorAll('.nav-btn').forEach(btn => {\n                btn.classList.remove('active');\n            });\n            \n            // 모든 콘텐츠 페이지에서 active 클래스 제거\n            document.querySelectorAll('.content-page').forEach(page => {\n                page.classList.remove('active');\n            });\n            \n            // 클릭된 네비게이션 버튼에 active 클래스 추가\n            const activeNav = document.querySelector(\\`button[onclick=\"showPage(\\${pageNumber})\"]\\`);\n            if (activeNav) {\n                activeNav.classList.add('active');\n            }\n            \n            // 해당 페이지에 active 클래스 추가\n            const activePage = document.getElementById('page-' + pageNumber);\n            if (activePage) {\n                activePage.classList.add('active');\n            }\n        }\n        \n        // 페이지 로드 시 첫 번째 페이지 활성화\n        document.addEventListener('DOMContentLoaded', function() {\n            showPage(1);\n        });\n    </script>\n</body>\n</html>`;\n\n// -----------------------------------------------------------------\n// ⚙️ 4단계: 결과 반환\n// -----------------------------------------------------------------\n\nreturn [{\n    json: {\n        fileName: `${videoInfo.page_number}.html`,\n        finalHTML: finalHTML,\n        debug: {\n            videoName: videoInfo.Name,\n            youtubeUrl: youtubeEmbedUrl,\n            chaptersCount: chapters.length,\n            inputItemsCount: allInputs.length,\n            chapterContentLengths: chapters.map((ch, i) => ({\n                chapter: i + 1,\n                contentLength: ch.content.length,\n                hasContent: ch.content.length > 50\n            }))\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "8ff8093e-4dac-4f19-a957-9e8fc11490f6",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=name",
+              "value": "={{ $json.fileName }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/related; boundary=\"foo_bar_baz\""
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer AIzaSyBbIugEQAgfNUJsJvWnzjOwQPcUnbqYpcY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "text/html; charset=utf-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/html",
+        "body": "={{ $json.finalHTML }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        0
+      ],
+      "id": "a4c4e7e8-bf0b-474a-ae33-54b11924d482",
+      "name": "HTTP Request1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8dcPA6fHKiPnBNt8",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app1dwEHkGSKphb8A",
+          "mode": "list",
+          "cachedResultName": "영화 국제시장 데이터(13분할)",
+          "cachedResultUrl": "https://airtable.com/app1dwEHkGSKphb8A"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblg5OY7mUP9ul0ky",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app1dwEHkGSKphb8A/tblg5OY7mUP9ul0ky"
+        },
+        "filterByFormula": "{page_status}=\"pending\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "fields": [
+            "Youtube_URL",
+            "page_number",
+            "Name"
+          ]
+        },
+        "sort": {
+          "property": [
+            {
+              "field": "page_number"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "17ec84ef-b473-4278-9a9b-1052da97eef2",
+      "name": "Search records1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CGLiHVK6lB0CMKDy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app2UbXaWZnOa6660",
+          "mode": "list",
+          "cachedResultName": " 영화<인생>통합콘텐츠",
+          "cachedResultUrl": "https://airtable.com/app2UbXaWZnOa6660"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblE7zHcZ0usd4oIS",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app2UbXaWZnOa6660/tblE7zHcZ0usd4oIS"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records1').first().json.id }}",
+            "page_status": "completed"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "page_number",
+              "displayName": "page_number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_intro",
+              "displayName": "scene_intro",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_contents",
+              "displayName": "scene_contents",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "page_status",
+              "displayName": "page_status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "completed",
+                  "value": "completed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_urls",
+              "displayName": "image_urls",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Youtube_URL",
+              "displayName": "Youtube_URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "audio_HTML(통합)",
+              "displayName": "audio_HTML(통합)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        240
+      ],
+      "id": "1bd6ff32-9e33-400f-8f72-fd6bbc4c5a9f",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CGLiHVK6lB0CMKDy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app7PHXdWkoIUoNgq",
+          "mode": "list",
+          "cachedResultName": "영화콘텐츠 콘텐츠 제작",
+          "cachedResultUrl": "https://airtable.com/app7PHXdWkoIUoNgq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblMq1YTHJgDmGm2T",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app7PHXdWkoIUoNgq/tblMq1YTHJgDmGm2T"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Single Select": "set"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "NUMBER",
+              "displayName": "NUMBER",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chapter_number",
+              "displayName": "chapter_number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chapter_intro",
+              "displayName": "chapter_intro",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chinese_subtitle",
+              "displayName": "chinese_subtitle",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Single Select",
+              "displayName": "Single Select",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "completed",
+                  "value": "completed"
+                },
+                {
+                  "name": "error",
+                  "value": "error"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                },
+                {
+                  "name": "set",
+                  "value": "set"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "text_content",
+              "displayName": "text_content",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_file",
+              "displayName": "image_file",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "google_drive_URL",
+              "displayName": "google_drive_URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_embed_url",
+              "displayName": "image_embed_url",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "HTML파일",
+              "displayName": "HTML파일",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DATE",
+              "displayName": "DATE",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Audio_HTML",
+              "displayName": "Audio_HTML",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "created",
+              "displayName": "created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "오류메세지",
+              "displayName": "오류메세지",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HTML_LONGTEXT",
+              "displayName": "HTML_LONGTEXT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "구글드라이브링크",
+              "displayName": "구글드라이브링크",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_URL",
+              "displayName": "image_URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        240
+      ],
+      "id": "c4a318d5-ad7a-447a-8fca-63326ce938db",
+      "name": "Update record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CGLiHVK6lB0CMKDy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Search records1": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7a3f944d-9fa8-431f-95c8-e2be2017f7b7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "66e9528ae17b86aa30fb8f56bb99b806483efddd684d86c188f94fa3463dec9c"
+  },
+  "id": "KJHg5p3k7KGkrkco",
+  "tags": []
+}
